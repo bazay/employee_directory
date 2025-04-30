@@ -4,7 +4,7 @@ require_relative "../lib/employee_directory"
 
 RSpec.describe EmployeeDirectory do
   describe ".get_common_group_for_employees" do
-    subject { described_class.get_common_group_for_employees(params) }
+    subject { described_class.get_common_group_for_employees(employees: employees_param) }
 
     let(:company) { EmployeeDirectory::Group.new(name: "Company") }
     let(:engineering) { EmployeeDirectory::Group.new(name: "Engineering", parent_group: company) }
@@ -23,7 +23,7 @@ RSpec.describe EmployeeDirectory do
     end
 
     context "when employees are Lisa and Marley" do
-      let(:params) { [lisa, marley] }
+      let(:employees_param) { [lisa, marley] }
 
       it "returns the common group" do
         expect(subject).to eq(frontend)
@@ -31,7 +31,7 @@ RSpec.describe EmployeeDirectory do
     end
 
     context "when employees are Alice and Marley" do
-      let(:params) { [alice, marley] }
+      let(:employees_param) { [alice, marley] }
 
       it "returns the common group" do
         expect(subject).to eq(engineering)
@@ -39,7 +39,7 @@ RSpec.describe EmployeeDirectory do
     end
 
     context "when employees are Mona, Lisa and Bob" do
-      let(:params) { [mona, lisa, bob] }
+      let(:employees_param) { [mona, lisa, bob] }
 
       it "returns the common group" do
         expect(subject).to eq(company)

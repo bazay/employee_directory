@@ -45,17 +45,31 @@ module EmployeeDirectory
   # If there is no common group, it should return nil.
   # If there are no employees, it should return nil.
   #
-  # @param employees [Array<Employee>] The list of employees to check.
-  # @return [String, nil] The common group or nil if there is none.
+  # @param employees [Array<EmployeeDirectory::Employee>] The list of employees to check.
+  # @return [EmployeeDirectory::Group, nil] The common group or nil if there is none.
 
   class << self
-    def get_common_group_for_employees(employees)
-      return nil if employees.any? { |employee| employee.group.nil? }
+    def get_common_group_for_employees(employees:)
+      # Validate the input :employees
+      validate_employees_arg(employees)
 
-      employee1, employee2 = *employees
-      common_groups = employee1.all_parent_groups & employee2.all_parent_groups
+      common_groups = employees.first.all_parent_groups
+      employees.each_with_index do |employee, i|
+        next if i == 0
+
+        common_groups = common_groups & employee.all_parent_groups
+      end
 
       common_groups.first
+    end
+
+    private
+
+    def validate_employees_arg(employees)
+      raise ArgumentError, "Arg :employees must be an Array" unless employees.is_a?(Array)
+      raise ArgumentError, "Arg :employees must contain at least two employee" if employees.size < 2
+      raise ArgumentError, "Arg :employees must contain only Employee objects" unless employees.all? { |employee| employee.is_a?(Employee) }
+      raise ArgumentError, "One or more employees do not belong to a group" if employees.any? { |employee| employee.group.nil? }
     end
   end
 end
