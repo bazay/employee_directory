@@ -5,6 +5,7 @@ At Atlassian - there are multiple groups, and each can have one or more groups. 
 You are tasked with designing a system that could find the closest common parent group given a target set of employees in the organization.
 
 **Data Model Diagram**
+
 ![group and employee tree diagram](/images/diagram.jpg)
 
 ## Installation
