@@ -7,27 +7,29 @@ module EmployeeDirectory
   class Error < StandardError; end
 
   class Employee
-    attr_accessor :name, :group
+    attr_accessor :name, :groups
 
-    def initialize(name:, group:)
+    def initialize(name:, groups:)
       @name = name
-      @group = group
+      @groups = groups
     end
 
     def all_parent_groups
       @all_parent_groups ||= begin
         parent_groups = []
-        current_group = @group
-        parent_group = current_group.parent_group
-
-        while parent_group != nil
-          parent_groups << current_group
-          current_group = parent_group
+        @groups.each do |group|
+          current_group = group
           parent_group = current_group.parent_group
-        end
-        parent_groups << current_group
 
-        parent_groups
+          while parent_group != nil
+            parent_groups << current_group
+            current_group = parent_group
+            parent_group = current_group.parent_group
+          end
+          parent_groups << current_group
+        end
+
+        parent_groups.uniq.sort_by { |group| group.hierarchy_level }.reverse
       end
     end
   end
@@ -35,9 +37,24 @@ module EmployeeDirectory
   class Group
     attr_accessor :name, :parent_group
 
-    def initialize(name:, sub_groups: [], parent_group: nil)
+    def initialize(name:, parent_group: nil)
       @name = name
       @parent_group = parent_group
+    end
+
+    def hierarchy_level
+      # We perform this operation once, then cache the result in instance variable
+      @hierarchy_level ||= begin
+        level = 0
+        current_group = self
+
+        while current_group.parent_group != nil
+          level += 1
+          current_group = current_group.parent_group
+        end
+
+        level
+      end
     end
   end
 
@@ -60,7 +77,7 @@ module EmployeeDirectory
         common_groups = common_groups & employee.all_parent_groups
       end
 
-      common_groups.first
+      common_groups.uniq.first
     end
 
     private
@@ -69,7 +86,7 @@ module EmployeeDirectory
       raise ArgumentError, "Arg :employees must be an Array" unless employees.is_a?(Array)
       raise ArgumentError, "Arg :employees must contain at least two employee" if employees.size < 2
       raise ArgumentError, "Arg :employees must contain only Employee objects" unless employees.all? { |employee| employee.is_a?(Employee) }
-      raise ArgumentError, "One or more employees do not belong to a group" if employees.any? { |employee| employee.group.nil? }
+      raise ArgumentError, "One or more employees do not belong to a group" if employees.any? { |employee| employee.groups.nil? || employee.groups.empty? }
     end
   end
 end
